@@ -1,0 +1,132 @@
+version: "3.7"
+
+networks:
+  app_network:
+    driver: overlay
+
+volumes:
+  rep1:
+    driver: local
+  rep2:
+    driver: local
+  rep3:
+    driver: local
+
+
+services:
+
+  rep1:
+    image: mongo
+    networks:
+      - app_network
+    deploy:
+      placement:
+        constraints:
+          - node.labels.hostname == docker01
+      replicas: 1
+    ports:
+      - "27017:27017"
+    volumes:
+      - rep1:/data/db
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rs0", "--journal","--dbpath","/data/db","--smallfiles", "--bind_ip_all"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: P@ssword123
+      MONGO_REPLICA_ADMIN: repadmin
+      MONGO_PASS_REPLICA: P@ssword123
+
+
+  rep2:
+    image: mongo
+    networks:
+      - app_network
+    deploy:
+      placement:
+        constraints:
+          - node.labels.hostname == docker02
+      replicas: 1
+    ports:
+    - "27018:27017"
+    volumes:
+      - rep2:/data/db
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rs0", "--journal","--dbpath","/data/db","--smallfiles", "--bind_ip_all"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: P@ssword123
+      MONGO_REPLICA_ADMIN: repadmin
+      MONGO_PASS_REPLICA: P@ssword123
+
+
+  rep3:
+    image: mongo
+    networks:
+      - app_network
+    deploy:
+      placement:
+        constraints:
+          - node.labels.hostname == docker03
+      replicas: 1
+    ports:
+    - "27019:27017"
+    volumes:
+      - rep3:/data/db
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rs0", "--journal","--dbpath","/data/db","--smallfiles", "--bind_ip_all"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: P@ssword123
+      MONGO_REPLICA_ADMIN: repadmin
+      MONGO_PASS_REPLICA: P@ssword123
+
+
+  bootstrap:
+    image: stefanprodan/mongo-bootstrap:latest
+    depends_on:
+      - rep1
+      - rep2
+      - rep3
+    networks:
+      - app_network
+    command:
+      - '-dataSet=rs0/rep1:27017,rep2:27017,rep3:27017'
+    deploy:
+      mode: replicated
+      restart_policy:
+        condition: none
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+
+  api:
+    image: aryen/api
+    networks:
+      - app_network
+    deploy:
+      replicas: 3
+      placement:
+        preferences:
+          - spread: node.labels.hostname
+    environment:
+      - SERVICE_PORTS=8080
+      - VIRTUAL_HOST=api.lab
+
+
+  loadbalancer:
+    image: dockercloud/haproxy
+    restart: on-failure
+    networks:
+      - app_network
+    depends_on: 
+      - api
+    environment:
+      - BALANCE=leastconn
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 80:80
+    deploy:
+      replicas: 3
+      placement:
+        preferences:
+          - spread: node.labels.hostname
