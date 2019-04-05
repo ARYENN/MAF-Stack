@@ -97,7 +97,6 @@ services:
         constraints:
           - node.role == manager
 
-
   api:
     image: aryen/api
     networks:
@@ -109,8 +108,7 @@ services:
           - spread: node.labels.hostname
     environment:
       - SERVICE_PORTS=8080
-      - VIRTUAL_HOST=api.lab
-
+      - VIRTUAL_HOST=10.0.10.20
 
   loadbalancer:
     image: dockercloud/haproxy
@@ -126,7 +124,7 @@ services:
     ports:
       - 80:80
     deploy:
-      replicas: 3
+      replicas: 1
       placement:
-        preferences:
-          - spread: node.labels.hostname
+        constraints:
+          - node.role == manager
