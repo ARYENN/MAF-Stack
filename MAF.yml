@@ -145,16 +145,17 @@ services:
   cadvisor:
     image: google/cadvisor
     container_name: cadvisor
+    networks:
+      - app_network
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
-      - /cgroup:/cgroup:ro
     restart: unless-stopped
     ports:
-      - 9090:9090
-    network_mode: host
-    placement:
-        constraints:
-          - node.role == manager
+      - 9090:8080
+    deploy:
+      placement:
+          constraints:
+            - node.role == manager
