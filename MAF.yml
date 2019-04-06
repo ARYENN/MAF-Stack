@@ -110,6 +110,19 @@ services:
       - SERVICE_PORTS=8080
       - VIRTUAL_HOST=api.arjen.io
 
+  web:
+    image: aryen/website
+    networks:
+      - app_network
+    deploy:
+      replicas: 3
+      placement:
+        preferences:
+          - spread: node.labels.hostname
+    environment:
+      - SERVICE_PORTS=80
+      - VIRTUAL_HOST=web.arjen.io
+
   loadbalancer:
     image: dockercloud/haproxy
     restart: on-failure
