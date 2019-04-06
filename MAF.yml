@@ -131,7 +131,7 @@ services:
     depends_on: 
       - api
     environment:
-      - BALANCE=leastconn
+      - BALANCE=source
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
