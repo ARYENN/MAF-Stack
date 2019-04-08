@@ -1,8 +1,16 @@
 version: "3.7"
 
 networks:
-  app_network:
+  database_network:
     driver: overlay
+  api_network:
+    driver: overlay
+  web_network:
+    driver: overlay
+  monitoring_network:
+    driver: overlay
+  
+  
 
 volumes:
   rep1:
@@ -18,14 +26,12 @@ services:
   rep1:
     image: mongo
     networks:
-      - app_network
+      - database_network
     deploy:
       placement:
         constraints:
           - node.labels.hostname == docker01
       replicas: 1
-    ports:
-      - "27017:27017"
     volumes:
       - rep1:/data/db
     entrypoint: [ "/usr/bin/mongod", "--replSet", "rs0", "--journal","--dbpath","/data/db","--smallfiles", "--bind_ip_all"]
@@ -39,14 +45,12 @@ services:
   rep2:
     image: mongo
     networks:
-      - app_network
+      - database_network
     deploy:
       placement:
         constraints:
           - node.labels.hostname == docker02
       replicas: 1
-    ports:
-    - "27018:27017"
     volumes:
       - rep2:/data/db
     entrypoint: [ "/usr/bin/mongod", "--replSet", "rs0", "--journal","--dbpath","/data/db","--smallfiles", "--bind_ip_all"]
@@ -60,14 +64,12 @@ services:
   rep3:
     image: mongo
     networks:
-      - app_network
+      - database_network
     deploy:
       placement:
         constraints:
           - node.labels.hostname == docker03
       replicas: 1
-    ports:
-    - "27019:27017"
     volumes:
       - rep3:/data/db
     entrypoint: [ "/usr/bin/mongod", "--replSet", "rs0", "--journal","--dbpath","/data/db","--smallfiles", "--bind_ip_all"]
@@ -85,7 +87,7 @@ services:
       - rep2
       - rep3
     networks:
-      - app_network
+      - database_network
     command:
       - '-dataSet=rs0/rep1:27017,rep2:27017,rep3:27017'
     deploy:
@@ -100,7 +102,8 @@ services:
   api:
     image: aryen/api
     networks:
-      - app_network
+      - api_network
+      - database_network
     deploy:
       replicas: 3
       placement:
@@ -113,7 +116,8 @@ services:
   web:
     image: aryen/website
     networks:
-      - app_network
+      - web_network
+      - api_network
     deploy:
       replicas: 3
       placement:
@@ -127,11 +131,13 @@ services:
     image: dockercloud/haproxy
     restart: on-failure
     networks:
-      - app_network
+      - web_network
+      - api_network
     depends_on: 
       - api
+      - web
     environment:
-      - BALANCE=source
+      - BALANCE=leastconn
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
@@ -146,7 +152,7 @@ services:
     image: google/cadvisor
     container_name: cadvisor
     networks:
-      - app_network
+      - monitoring_network
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
