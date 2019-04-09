@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block body %}
+
+    {% if result %}
+        <div class="container vertical-center">
+            <div class="jumbotron">
+                <h1 class="display-4">Welkom, {{ result.name }}</h1>
+                <p class="lead">We zien dat je nieuw bent bij MAF!</p>
+                <p class="lead">Vul hieronder je gegevens in om je aan te melden.</p>
+                <hr class="my-4">
+                <p>
+                    <form method=post>
+                        <dl>
+                            {{ render_field(form.straatnaam) }}
+                            {{ render_field(form.huisnummer) }}
+                            {{ render_field(form.postcode) }}
+                            {{ render_field(form.woonplaats) }}
+                            {{ render_field(form.land) }}
+                            {{ render_field(form.accept_tos) }}
+                        </dl>
+                        <p><input type=submit value=Registreer! class="btn btn-primary">
+                    </form>
+                </p>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock body %}

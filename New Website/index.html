@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+
+{% block body %}
+<div class="container vertical-center">
+    <div class="jumbotron">
+        <h1 class="display-4">Welkom bij MAF!</h1>
+        <p class="lead">Log nu in met je Google Account!   <span class="badge badge-primary">Nieuw</span></p>
+        <p>
+            {% if hostname %}
+                Hostname: <strong>{{ hostname }}</strong>
+            {% endif %}
+            {% if ip %}
+                IP: <strong>{{ ip }}</strong>
+            {% endif%}
+            {% if lookup%}
+                ISP: <strong>{{ lookup.isp }}</strong>
+                Country: <strong>{{ lookup.country }}</strong>
+            {% endif%}
+        </p>
+        <hr class="my-4">
+        <p>Door op de onderstaande knop te drukken word je naar Google gebracht waar je kunt inloggen.</p>
+        <a class="btn btn-primary btn-lg" href="/login/google" role="button">Log in met Google!</a>
+
+
+        
+    </div>
+</div>
+{% endblock body %}

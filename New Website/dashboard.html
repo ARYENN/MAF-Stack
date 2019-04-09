@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+    {% if result %}
+        <div class="container vertical-center">
+                <div class="jumbotron">
+                    <h1 class="display-4">Welkom, {{ result.name }}</h1>
+                    <a class="btn btn-primary btn-lg" href="/logout" role="button">Uitloggen</a>
+                    <hr class="my-4">
+                    <p class="lead">Je gegevens
+
+                        {% if naw_gegevens %}
+                            <table class="table">                                
+                                <tr>
+                                <td ><strong>Voornaam: </strong></td>
+                                <td>{{ naw_gegevens['first_name'] }}</td>
+                                </tr>
+
+                                <tr>
+                                <td><strong>Achternaam: </strong></td>
+                                <td>{{ naw_gegevens['last_name'] }}</td>
+                                </tr>
+
+                                <tr>
+                                <td><strong>Adres: </strong></td>
+                                <td>{{ naw_gegevens['street'] }}</td>
+                                </tr>
+
+                                <tr>
+                                <td><strong>Postcode: </strong></td>
+                                <td>{{ naw_gegevens['zip'] }}</td>
+                                </tr>
+
+                                <tr>
+                                <td><strong>Woonplaats: </strong></td>
+                                <td>{{ naw_gegevens['city'] }}</td>
+                                </tr>
+
+                                <tr>
+                                <td><strong>Land: </strong></td>
+                                <td>{{ naw_gegevens['country'] }}</td>
+                                </tr>
+                            </table>
+                        {% endif %}
+
+                    <hr class="my-4">
+
+                    {% if workouts %}
+                    <p class="lead">Je Workouts
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                    <th scope="col">Datum</th>
+                                    <th scope="col">Activiteit</th>
+                                    <th scope="col">Tijdsduur (minuten)</th>
+                                    <th scope="col">Verbrande Calorieën</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for workout in workouts %}
+                                    <tr>
+                                    <td>{{ workout.timestamp }}</td>
+                                    <td>{{ workout.activity_name }}</td>
+                                    <td>{{ workout.duration }}</td>
+                                    <td>{{ workout.calories_burned }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                        <p class="lead">Je hebt nog geen workouts
+                        {% endif %}
+                </div>
+            </div>
+    {% endif %}
+
+{% endblock body %}
